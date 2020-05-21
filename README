@@ -1,0 +1,7 @@
+This is a learning project for making a chess server and web client using
+node.js. This is my first node.js project. The goal is to be able to play
+chess across the internet. Some stretch goals would be to make a login
+system, use a replicated database for reliable storage, log usage metrics
+and things like error rates for alerting, etc. The first draft will use
+in-memory storage of games and will not have much authentication, as learning
+the basics of a new framework (node.js) is the primary goal.
