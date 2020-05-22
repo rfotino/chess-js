@@ -2,7 +2,7 @@ const http = require('http');
 const crypto = require("crypto");
 const fs = require('fs');
 
-const chess = require('./lib/chess.js')
+const chess = require('./chess.js')
 
 const hostname = '127.0.0.1';
 const port = 3000;
@@ -12,19 +12,19 @@ let games = new Map();
 
 const STATIC_FILES = {
   '/': {
-    file: 'client/index.html',
+    file: 'static/index.html',
     contentType: 'text/html',
   },
   '/game': {
-    file: 'client/game.html',
+    file: 'static/game.html',
     contentType: 'text/html',
   },
   '/index.js': {
-    file: 'client/index.js',
+    file: 'static/index.js',
     contentType: 'text/javascript',
   },
   '/styles.css': {
-    file: 'client/styles.css',
+    file: 'static/styles.css',
     contentType: 'text/css',
   },
 };
