@@ -37,14 +37,14 @@ exports.ChessGame = class ChessGame {
     this._whitePlayerId = null;
     this._blackPlayerId = null;
     this._board = [
-      ['BR', 'BB', 'BN', 'BK', 'BQ', 'BN', 'BB', 'BR'],
+      ['BR', 'BB', 'BN', 'BQ', 'BK', 'BN', 'BB', 'BR'],
       ['BP', 'BP', 'BP', 'BP', 'BP', 'BP', 'BP', 'BP'],
       ['  ', '  ', '  ', '  ', '  ', '  ', '  ', '  '],
       ['  ', '  ', '  ', '  ', '  ', '  ', '  ', '  '],
       ['  ', '  ', '  ', '  ', '  ', '  ', '  ', '  '],
       ['  ', '  ', '  ', '  ', '  ', '  ', '  ', '  '],
       ['WP', 'WP', 'WP', 'WP', 'WP', 'WP', 'WP', 'WP'],
-      ['WR', 'WB', 'WN', 'WK', 'WQ', 'WN', 'WB', 'WR'],
+      ['WR', 'WB', 'WN', 'WQ', 'WK', 'WN', 'WB', 'WR'],
     ];
     this._whoseTurn = WHITE;
     this._castlingInfo = {};
