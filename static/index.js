@@ -1,5 +1,6 @@
 var WHITE = 'W';
 var BLACK = 'B';
+var BOARD_SIZE = 8;
 
 // https://en.wikipedia.org/wiki/Chess_symbols_in_Unicode
 var ASCII_TO_UNICODE = Object.freeze({
@@ -116,10 +117,21 @@ function executeMove(fromSquare, toSquare) {
       isExecutingMove = false;
     }
   };
+  console.log(showBlackOnBottom);
   xhr.send(JSON.stringify({
     // TODO: support pawn promotion and castling in the UI
-    srcPos: fromSquare,
-    dstPos: toSquare,
+    srcPos: {
+      rank: showBlackOnBottom ?
+	BOARD_SIZE - fromSquare.rank - 1: fromSquare.rank,
+      file: showBlackOnBottom ?
+	BOARD_SIZE - fromSquare.file - 1 : fromSquare.file,
+    },
+    dstPos: {
+      rank: showBlackOnBottom ?
+	BOARD_SIZE- toSquare.rank - 1 : toSquare.rank,
+      file: showBlackOnBottom ?
+	BOARD_SIZE - toSquare.file - 1 : toSquare.file,
+    },
     pawnPromotion: 'Q',
   }));
 }
@@ -164,25 +176,83 @@ function initBoard() {
   }
 }
 
-function updateBoard(response) {
-  console.log(response);
-  // TODO: Should say something like "waiting for other player to join"
-  // or "it's your turn" or "waiting for other player to move".
-  messageElem.innerHTML = 'Waiting for input.';
-  var showBlackOnBottom = (
-    response.hasOwnProperty('myColor') &&
-    response.myColor === BLACK
+function joinGame(color) {
+  var xhr = new XMLHttpRequest();
+  xhr.open('POST', 'api/add-player?gameId=' + getGameIdFromURL());
+  xhr.onreadystatechange = function() {
+    if (xhr.status === 200) {
+      const response = JSON.parse(xhr.responseText);
+      updateBoard(response);
+    } else if (xhr.status === 400) {
+      messageElem.innerHTML = 'Error joining game, please try again.';
+      console.log('Error joining game', xhr.statusText, xhr.responseText);
+    }
+  };
+  setPlayerId(function() {
+    xhr.send(JSON.stringify({
+      role: color,
+    }));
+  });
+}
+function joinAsWhite() {
+  joinGame(WHITE);
+}
+function joinAsBlack() {
+  joinGame(BLACK);
+}
+
+var showBlackOnBottom = false;
+function updateBoard(game) {
+  // Update status message
+  if (!game.readyToStart) {
+    if (game.hasOwnProperty('myColor')) {
+      messageElem.innerHTML = 'Waiting for players to join.';
+    } else {
+      messageElem.innerHTML = 'Join the game or wait to spectate.';
+    }
+  } else if (game.gameOver) {
+    if (message.winner === WHITE) {
+      messageElem.innerHTML = 'Checkmate, white wins.';
+    } else if (message.winner === BLACK) {
+      messageElem.innerHTML = 'Checkmate, black wins.';
+    } else {
+      messageElem.innerHTML = 'Game ended in a draw.';
+    }
+  } else if (game.whoseTurn === WHITE) {
+    message.innerHTML = "White's turn.";
+  } else if (game.whoseTurn === BLACK) {
+    message.innerHTML = "Black's turn.";
+  }
+
+  // Show/hide join buttons depending on if there are open seats
+  var joinButtonsContainer = document.getElementById('join-buttons');
+  var joinAsWhiteButton = document.getElementById('join-as-white');
+  var joinAsBlackButton = document.getElementById('join-as-black');
+  if (!game.hasOwnProperty('myColor') && game.openSeats.length > 0) {
+    joinButtonsContainer.style.display = 'block';
+    joinAsWhiteButton.style.display =
+      game.openSeats.includes(WHITE) ? 'inline-block' : 'none';
+    joinAsBlackButton.style.display =
+      game.openSeats.includes(BLACK) ? 'inline-block' : 'none';
+  } else {
+    joinButtonsContainer.style.display = 'none';
+  }
+
+  // Update pieces shown on the board
+  showBlackOnBottom = (
+    game.hasOwnProperty('myColor') &&
+    game.myColor === BLACK
   );
-  for (var rank = 0; rank < response.board.length; rank++) {
-    for (var file = 0; file < response.board[rank].length; file++) {
+  for (var rank = 0; rank < game.board.length; rank++) {
+    for (var file = 0; file < game.board[rank].length; file++) {
       var squareElem = document.getElementById('sq-' + rank + '-' + file);
       if (showBlackOnBottom) {
-	var flippedRank = response.board.length - rank - 1;
-	var flippedFile = response.board[rank].length - file - 1;
+	var flippedRank = game.board.length - rank - 1;
+	var flippedFile = game.board[rank].length - file - 1;
 	squareElem.innerHTML =
-	  ASCII_TO_UNICODE[response.board[flippedRank][flippedFile]];
+	  ASCII_TO_UNICODE[game.board[flippedRank][flippedFile]];
       } else {
-	squareElem.innerHTML = ASCII_TO_UNICODE[response.board[rank][file]];
+	squareElem.innerHTML = ASCII_TO_UNICODE[game.board[rank][file]];
       }
     }
   }

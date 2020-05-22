@@ -8,6 +8,12 @@
   <body onload="loadGame()">
     <h1>Chess</h1>
     <p id="message">Loading...</p>
+    <div id="join-buttons">
+      <a role="button" tabindex="0" class="join-button"
+	 id="join-as-white" onclick="joinAsWhite()">play as white</a>
+      <a role="button" tabindex="1" class="join-button"
+	 id="join-as-black" onclick="joinAsBlack()">play as black</a>
+    </div>
     <table id="board" />
     <script type="text/javascript" src="index.js" ></script>
   </body>

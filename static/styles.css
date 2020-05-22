@@ -12,7 +12,16 @@ body {
     background-color: #ffffff;
 }
 
-.start-button {
+#message {
+    font-size: 1.2em;
+}
+
+#join-buttons {
+    display: none;
+    padding-bottom: 10px;
+}
+
+.start-button, .join-button {
     font-size: 2em;
     display: inline-block;
     padding: 10px 20px;
@@ -21,26 +30,26 @@ body {
     outline: none;
 }
 
-.start-button:hover {
+.start-button:hover, .join-button:hover {
     text-decoration: underline;
     cursor: pointer;
 }
 
-.start-button#white {
+.start-button#white, #join-as-white {
     background-color: #dddddd;
     color: #000000;
 }
 
-.start-button#white:active {
+.start-button#white:active, #join-as-white:active {
     background-color: #cccccc;
 }
 
-.start-button#black {
+.start-button#black, #join-as-black {
     background-color: #333333;
     color: #ffffff;
 }
 
-.start-button#black:active {
+.start-button#black:active, #join-as-black:active {
     background-color: #000000;
 }
 

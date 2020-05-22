@@ -59,18 +59,26 @@ exports.ChessGame = class ChessGame {
 
   addPlayer(playerId, color) {
     if (color === WHITE) {
-      if (this._whitePlayerId === null) {
-	this._whitePlayerId = playerId;
-	return {success: true};
+      if (playerId !== this._blackPlayerId) {
+	if (this._whitePlayerId === null) {
+	  this._whitePlayerId = playerId;
+	  return {success: true};
+	} else {
+	  return {success: false, message: 'White is already assigned.'};
+	}
       } else {
-	return {success: false, message: 'White is already assigned.'};
+	return {success: false, message: 'Player already assigned to black.'};
       }
     } else if (color === BLACK) {
-      if (this._blackPlayerId === null) {
-	this._blackPlayerId = playerId;
-	return {success: true};
+      if (playerId !== this._whitePlayerId) {
+	if (this._blackPlayerId === null) {
+	  this._blackPlayerId = playerId;
+	  return {success: true};
+	} else {
+	  return {success: false, message: 'Black is already assigned.'};
+	}
       } else {
-	return {success: false, message: 'Black is already assigned.'};
+	return {success: false, message: 'Player already assigned to white.'};
       }
     } else {
       return {
@@ -318,6 +326,11 @@ exports.ChessGame = class ChessGame {
   //   pawnPromotion: QUEEN | BISHOP | ROOK | KNIGHT,
   // }
   executeMove(move) {
+    // Don't allow moves before players have joined both colors
+    if (!this.isReadyToStart()) {
+      return {success: false, message: 'Both players must join before starting.'};
+    }
+
     // Make copies of board/en passant info since we will be modifying them, then
     // possibly rejecting modifications if it results in check etc
     let newBoard = this._cloneBoard(this._board);
