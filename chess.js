@@ -80,7 +80,7 @@ exports.ChessGame = class ChessGame {
     }
   }
 
-  getEmptySeats() {
+  getOpenSeats() {
     let emptySeats = [];
     if (this._whitePlayerId === null) {
       emptySeats.push(WHITE);
@@ -92,7 +92,7 @@ exports.ChessGame = class ChessGame {
   }
 
   isReadyToStart() {
-    return this.getEmptySeats().length === 0;
+    return this.getOpenSeats().length === 0;
   }
 
   // Do a deep copy of the board so we can make modifications
@@ -592,10 +592,11 @@ exports.ChessGame = class ChessGame {
       board: this._board,
       enPassantInfo: this._enPassantInfo,
       castlingInfo: this._castlingInfo,
+      openSeats: this.getOpenSeats(),
     };
-    if (playerId === this._whitePlayerId) {
+    if (playerId !== null && playerId === this._whitePlayerId) {
       obj.myColor = WHITE;
-    } else if (playerId === this._blackPlayerId) {
+    } else if (playerId !== null && playerId === this._blackPlayerId) {
       obj.myColor = BLACK;
     }
     return obj;

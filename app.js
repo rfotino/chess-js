@@ -30,20 +30,20 @@ const STATIC_FILES = {
 };
 
 const API_POST_METHODS = {
-  '/api/create-player-id': function(getParams, postParams, res) {
-    let playerId = '';
+  '/api/create-player-id': function(playerId, getParams, postParams, res) {
+    let newPlayerId = '';
     while (true) {
-      playerId = crypto.randomBytes(8).toString('hex');
-      if (!playerIds.has(playerId)) {
-	playerIds.add(playerId);
+      newPlayerId = crypto.randomBytes(8).toString('hex');
+      if (!playerIds.has(newPlayerId)) {
+	playerIds.add(newPlayerId);
 	break;
       }
     }
     res.statusCode = 200;
     res.setHeader('Content-Type', 'text/plain');
-    res.end(playerId);
+    res.end(newPlayerId);
   },
-  '/api/create-game': function(getParams, postParams, res) {
+  '/api/create-game': function(playerId, getParams, postParams, res) {
     let gameId = '';
     while (true) {
       gameId = crypto.randomBytes(8).toString('hex');
@@ -52,31 +52,41 @@ const API_POST_METHODS = {
 	break;
       }
     }
-    let playerId = null;
-    if (postParams.hasOwnProperty('playerId') &&
-	postParams.hasOwnProperty('role')) {
-      playerId = postParams.playerId;
-      //games.get(gameId).addPlayer(playerId, postParams.role);
-      // TODO: right now add player to both roles for testing
-      games.get(gameId).addPlayer(playerId, chess.WHITE);
-      games.get(gameId).addPlayer(playerId, chess.BLACK);
+    if (playerId !== null && postParams.hasOwnProperty('role')) {
+      games.get(gameId).addPlayer(playerId, postParams.role);
     }
     res.statusCode = 200;
     res.setHeader('Content-Type', 'text/json');
     res.end(JSON.stringify(games.get(gameId).toObj(playerId)));
   },
-  '/api/add-player': function(getParams, postParams, res) {
-    // TODO: Somehow be able to add a second player, probably
-    // not with an API call. Second player will visit special
-    // URL and may have to have playerId generated
-    res.statusCode = 501;
-    res.setHeader('Content-Type', 'text/plain');
-    res.end('Not implemented');
-  },
-  '/api/execute-move': function(getParams, postParams, res) {
+  '/api/add-player': function(playerId, getParams, postParams, res) {
     if (!getParams.has('gameId') ||
-	!postParams.hasOwnProperty('move') ||
-	!postParams.hasOwnProperty('playerId')) {
+	!postParams.hasOwnProperty('role') ||
+	playerId === null) {
+      res.statusCode = 400;
+      res.setHeader('Content-Type', 'text/plain');
+      res.end('Must have game id, player id, and role');
+      return;
+    } else if (!games.has(getParams.get('gameId'))) {
+      res.statusCode = 400;
+      res.setHeader('Content-Type', 'text/plain');
+      res.end('Game not found.');
+      return;
+    }
+    let game = games.get(getParams.get('gameId'));
+    const result = game.addPlayer(playerId, postParams.role);
+    if (result.success) {
+      res.statusCode = 200;
+      res.setHeader('Content-Type', 'text/json');
+      res.end(JSON.stringify(game.toObj(playerId)));
+    } else {
+      res.statusCode = 400;
+      res.setHeader('Content-Type', 'text/json');
+      res.end(`Unable to add player: ${result.message}`);
+    }
+  },
+  '/api/execute-move': function(playerId, getParams, postParams, res) {
+    if (!getParams.has('gameId') || playerId === null) {
       res.statusCode = 400;
       res.setHeader('Content-Type', 'text/plain');
       res.end('Must have game id, player id, and move info.');
@@ -88,23 +98,26 @@ const API_POST_METHODS = {
       const gameId = getParams.get('gameId');
       const game = games.get(gameId);
       const move = postParams.move;
-      const result = game.executeMove(move);
+      const result = game.executeMove({
+	playerId: playerId,
+	data: postParams,
+      });
       res.statusCode = 200;
       res.setHeader('Content-Type', 'text/plain');
       res.end(JSON.stringify({
 	moveResult: result,
-	gameStatus: game.toObj(postParams.playerId),
+	gameStatus: game.toObj(playerId),
       }));
     }
   },
 };
 
 const API_GET_METHODS = {
-  '/api/get-game': function(params, res) {
+  '/api/get-game': function(playerId, params, res) {
     if (params.has('id') && games.has(params.get('id'))) {
       res.statusCode = 200;
       res.setHeader('Content-Type', 'text/json');
-      res.end(JSON.stringify(games.get(params.get('id')).toObj()));
+      res.end(JSON.stringify(games.get(params.get('id')).toObj(playerId)));
     } else {
       res.statusCode = 404;
       res.setHeader('Content-Type', 'text/plain');
@@ -132,9 +145,22 @@ function parseUrl(url) {
   return parsed;
 }
 
+function parsePlayerId(cookieStr) {
+  const cookieKvps = cookieStr.split('; ');
+  for (let i = 0; i < cookieKvps.length; i++) {
+    const kvp = cookieKvps[i].split('=');
+    if (kvp.length === 2 && kvp[0] === 'playerid') {
+      return kvp[1];
+    }
+  }
+  return null;
+}
+
 const server = http.createServer((req, res) => {
   console.log(req.method, req.url);
-  const url = parseUrl(req.url);
+  const url = parseUrl(req.url)
+  const playerId = req.headers.hasOwnProperty('cookie') ?
+	parsePlayerId(req.headers.cookie) : null;
 
   switch (req.method) {
   case 'GET':
@@ -153,7 +179,7 @@ const server = http.createServer((req, res) => {
 	}
       });
     } else if (API_GET_METHODS.hasOwnProperty(url.path)) {
-      API_GET_METHODS[url.path](url.params, res);
+      API_GET_METHODS[url.path](playerId, url.params, res);
     } else {
       res.statusCode = 404;
       res.setHeader('Content-Type', 'text/plain');
@@ -168,7 +194,7 @@ const server = http.createServer((req, res) => {
       });
       req.on('end', () => {
 	const postParams = postData === '' ? {} : JSON.parse(postData);
-	API_POST_METHODS[url.path](url.params, postParams, res);
+	API_POST_METHODS[url.path](playerId, url.params, postParams, res);
       });
     } else {
       res.statusCode = 404;

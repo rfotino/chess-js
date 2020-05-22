@@ -21,7 +21,7 @@ var ASCII_TO_UNICODE = Object.freeze({
 
 var messageElem = document.getElementById('message');
 
-function getPlayerId(callback) {
+function setPlayerId(callback) {
   if (document.cookie === '') {
     var xhr = new XMLHttpRequest();
     xhr.open('POST', 'api/create-player-id');
@@ -30,7 +30,7 @@ function getPlayerId(callback) {
 	if (xhr.status === 200) {
 	  var playerId = xhr.responseText;
 	  document.cookie = 'playerid=' + playerId + '; SameSite=Strict';
-	  callback(playerId);
+	  callback();
 	} else {
 	  messageElem.innerHTML = 'Error creating player id, please try again.';
 	  console.log("error", xhr.statusText);
@@ -39,12 +39,11 @@ function getPlayerId(callback) {
     };
     xhr.send();
   } else {
-    callback(document.cookie.split('=')[1]);
+    callback();
   }
 }
 
-function createGame(playerId, color, callback) {
-  console.log('Creating game for player id ' + playerId + ' as role ' + color);
+function createGame(color, callback) {
   var xhr = new XMLHttpRequest();
   xhr.open('POST', 'api/create-game');
   xhr.onreadystatechange = function() {
@@ -64,7 +63,6 @@ function createGame(playerId, color, callback) {
     }
   };
   xhr.send(JSON.stringify({
-    playerId: playerId,
     role: color,
   }));
 }
@@ -118,20 +116,12 @@ function executeMove(fromSquare, toSquare) {
       isExecutingMove = false;
     }
   };
-  getPlayerId(function(playerId) {
-    xhr.send(JSON.stringify({
-      playerId,
-      move: {
-	playerId,
-	data: {
-	  // TODO: support pawn promotion and castling in the UI
-	  srcPos: fromSquare,
-	  dstPos: toSquare,
-	  pawnPromotion: 'Q',
-	},
-      },
-    }));
-  });
+  xhr.send(JSON.stringify({
+    // TODO: support pawn promotion and castling in the UI
+    srcPos: fromSquare,
+    dstPos: toSquare,
+    pawnPromotion: 'Q',
+  }));
 }
 function clickSquare(rank, file) {
   if (isExecutingMove) {
@@ -175,6 +165,7 @@ function initBoard() {
 }
 
 function updateBoard(response) {
+  console.log(response);
   // TODO: Should say something like "waiting for other player to join"
   // or "it's your turn" or "waiting for other player to move".
   messageElem.innerHTML = 'Waiting for input.';
@@ -212,16 +203,16 @@ function loadGame() {
 }
 
 function startGameAsWhite() {
-  getPlayerId(function(playerId) {
-    createGame(playerId, WHITE, function(gameId) {
+  setPlayerId(function() {
+    createGame(WHITE, function(gameId) {
       window.location.href = 'game?id=' + gameId;
     });
   });
 }
 
 function startGameAsBlack() {
-  getPlayerId(function(playerId) {
-    createGame(playerId, BLACK, function(gameId) {
+  setPlayerId(function() {
+    createGame(BLACK, function(gameId) {
       window.location.href = 'game?id=' + gameId;
     });
   });
