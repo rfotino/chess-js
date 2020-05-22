@@ -169,10 +169,21 @@ function updateBoard(response) {
   // TODO: Should say something like "waiting for other player to join"
   // or "it's your turn" or "waiting for other player to move".
   messageElem.innerHTML = 'Waiting for input.';
+  var showBlackOnBottom = (
+    response.hasOwnProperty('myColor') &&
+    response.myColor === BLACK
+  );
   for (var rank = 0; rank < response.board.length; rank++) {
     for (var file = 0; file < response.board[rank].length; file++) {
       var squareElem = document.getElementById('sq-' + rank + '-' + file);
-      squareElem.innerHTML = ASCII_TO_UNICODE[response.board[rank][file]];
+      if (showBlackOnBottom) {
+	var flippedRank = response.board.length - rank - 1;
+	var flippedFile = response.board[rank].length - file - 1;
+	squareElem.innerHTML =
+	  ASCII_TO_UNICODE[response.board[flippedRank][flippedFile]];
+      } else {
+	squareElem.innerHTML = ASCII_TO_UNICODE[response.board[rank][file]];
+      }
     }
   }
 }
