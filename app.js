@@ -10,6 +10,19 @@ const port = 3000;
 let playerIds = new Set();
 let games = new Map();
 
+let gameListeners = {};
+function updateListeners(gameId) {
+  const game = games.get(gameId);
+  gameListeners[gameId].forEach(listener => {
+    const playerId = listener.playerId;
+    const res = listener.res;
+    res.statusCode = 200;
+    res.setHeader('Content-Type', 'text/json');
+    res.end(JSON.stringify(game.toObj(playerId)));
+  });
+  gameListeners[gameId] = [];
+}
+
 const STATIC_FILES = {
   '/': {
     file: 'static/index.html',
@@ -55,6 +68,7 @@ const API_POST_METHODS = {
     if (playerId !== null && postParams.hasOwnProperty('role')) {
       games.get(gameId).addPlayer(playerId, postParams.role);
     }
+    gameListeners[gameId] = [];
     res.statusCode = 200;
     res.setHeader('Content-Type', 'text/json');
     res.end(JSON.stringify(games.get(gameId).toObj(playerId)));
@@ -73,12 +87,14 @@ const API_POST_METHODS = {
       res.end('Game not found.');
       return;
     }
-    let game = games.get(getParams.get('gameId'));
+    const gameId = getParams.get('gameId');
+    let game = games.get(gameId);
     const result = game.addPlayer(playerId, postParams.role);
     if (result.success) {
       res.statusCode = 200;
       res.setHeader('Content-Type', 'text/json');
       res.end(JSON.stringify(game.toObj(playerId)));
+      updateListeners(gameId);
     } else {
       res.statusCode = 400;
       res.setHeader('Content-Type', 'text/json');
@@ -108,6 +124,9 @@ const API_POST_METHODS = {
 	moveResult: result,
 	gameStatus: game.toObj(playerId),
       }));
+      if (result.success) {
+	updateListeners(gameId);
+      }
     }
   },
 };
@@ -118,6 +137,16 @@ const API_GET_METHODS = {
       res.statusCode = 200;
       res.setHeader('Content-Type', 'text/json');
       res.end(JSON.stringify(games.get(params.get('id')).toObj(playerId)));
+    } else {
+      res.statusCode = 404;
+      res.setHeader('Content-Type', 'text/plain');
+      res.end('Game not found.');
+    }
+  },
+  '/api/wait-for-updates': function(playerId, params, res) {
+    if (params.has('gameId') && games.has(params.get('gameId'))) {
+      const gameId = params.get('gameId');
+      gameListeners[gameId].push({playerId, res});
     } else {
       res.statusCode = 404;
       res.setHeader('Content-Type', 'text/plain');

@@ -50,7 +50,7 @@ function createGame(color, callback) {
   xhr.onreadystatechange = function() {
     if (xhr.readyState === XMLHttpRequest.DONE) {
       if (xhr.status === 200) {
-	const response = JSON.parse(xhr.responseText);
+	var response = JSON.parse(xhr.responseText);
 	if (response.hasOwnProperty('gameId')) {
 	  callback(response.gameId);
 	} else {
@@ -99,7 +99,7 @@ function executeMove(fromSquare, toSquare) {
   xhr.onreadystatechange = function() {
     if (xhr.readyState === XMLHttpRequest.DONE) {
       if (xhr.status === 200) {
-	const response = JSON.parse(xhr.responseText);
+	var response = JSON.parse(xhr.responseText);
 	updateBoard(response.gameStatus);
 	if (!response.moveResult.success) {
 	  messageElem.innerHTML = response.moveResult.message;
@@ -181,7 +181,7 @@ function joinGame(color) {
   xhr.open('POST', 'api/add-player?gameId=' + getGameIdFromURL());
   xhr.onreadystatechange = function() {
     if (xhr.status === 200) {
-      const response = JSON.parse(xhr.responseText);
+      var response = JSON.parse(xhr.responseText);
       updateBoard(response);
     } else if (xhr.status === 400) {
       messageElem.innerHTML = 'Error joining game, please try again.';
@@ -258,6 +258,21 @@ function updateBoard(game) {
   }
 }
 
+function waitForUpdates(gameId) {
+  var xhr = new XMLHttpRequest();
+  xhr.open('GET', 'api/wait-for-updates?gameId=' + gameId);
+  xhr.onreadystatechange = function() {
+    if (xhr.readyState === XMLHttpRequest.DONE) {
+      if (xhr.status === 200) {
+	var response = JSON.parse(xhr.responseText);
+	updateBoard(response);
+      }
+      waitForUpdates(gameId);
+    }
+  };
+  xhr.send();
+}
+
 function loadGame() {
   initBoard();
   var gameId = getGameIdFromURL();
@@ -269,8 +284,9 @@ function loadGame() {
     xhr.onreadystatechange = function() {
       if (xhr.readyState === XMLHttpRequest.DONE) {
 	if (xhr.status === 200) {
-	  const response = JSON.parse(xhr.responseText);
+	  var response = JSON.parse(xhr.responseText);
 	  updateBoard(response);
+	  waitForUpdates(gameId);
 	} else if (xhr.status === 404) {
 	  messageElem.innerHTML = 'Game not found on server.';
 	} else {
