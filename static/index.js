@@ -267,7 +267,11 @@ function waitForUpdates(gameId) {
 	var response = JSON.parse(xhr.responseText);
 	updateBoard(response);
       }
-      waitForUpdates(gameId);
+      // Not found means game no longer exists on
+      // the server, no point in polling repeatedly
+      if (xhr.status !== 404) {
+	waitForUpdates(gameId);
+      }
     }
   };
   xhr.send();
