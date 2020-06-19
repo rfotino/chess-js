@@ -32,11 +32,14 @@ exports.BLACK = BLACK;
 exports.ASCII_TO_UNICODE = ASCII_TO_UNICODE;
 
 exports.ChessGame = class ChessGame {
-  constructor(gameId) {
+  constructor(
+    gameId, board = null, whoseTurn = null,
+    castlingInfo = null, enPassantInfo = null
+  ) {
     this._gameId = gameId;
     this._whitePlayerId = null;
     this._blackPlayerId = null;
-    this._board = [
+    this._board = board !== null ? board : [
       ['BR', 'BB', 'BN', 'BQ', 'BK', 'BN', 'BB', 'BR'],
       ['BP', 'BP', 'BP', 'BP', 'BP', 'BP', 'BP', 'BP'],
       ['  ', '  ', '  ', '  ', '  ', '  ', '  ', '  '],
@@ -46,11 +49,15 @@ exports.ChessGame = class ChessGame {
       ['WP', 'WP', 'WP', 'WP', 'WP', 'WP', 'WP', 'WP'],
       ['WR', 'WB', 'WN', 'WQ', 'WK', 'WN', 'WB', 'WR'],
     ];
-    this._whoseTurn = WHITE;
-    this._castlingInfo = {};
-    this._castlingInfo[WHITE] = {kingSide: true, queenSide: true};
-    this._castlingInfo[BLACK] = {kingSide: true, queenSide: true};
-    this._enPassantInfo = {
+    this._whoseTurn = whoseTurn !== null ? whoseTurn : WHITE;
+    if (castlingInfo !== null) {
+      this._castlingInfo = castlingInfo;
+    } else {
+      this._castlingInfo = {};
+      this._castlingInfo[WHITE] = {kingSide: true, queenSide: true};
+      this._castlingInfo[BLACK] = {kingSide: true, queenSide: true};
+    }
+    this._enPassantInfo = enPassantInfo !== null ? enPassantInfo : {
       available: false,
       dstPos: null,  // Position pawn would move to capture
       capturePos: null,  // Position of the to-be-captured pawn

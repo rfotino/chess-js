@@ -117,7 +117,6 @@ function executeMove(fromSquare, toSquare) {
       isExecutingMove = false;
     }
   };
-  console.log(showBlackOnBottom);
   xhr.send(JSON.stringify({
     // TODO: support pawn promotion and castling in the UI
     srcPos: {
@@ -211,17 +210,17 @@ function updateBoard(game) {
       messageElem.innerHTML = 'Join the game or wait to spectate.';
     }
   } else if (game.gameOver) {
-    if (message.winner === WHITE) {
+    if (game.winner === WHITE) {
       messageElem.innerHTML = 'Checkmate, white wins.';
-    } else if (message.winner === BLACK) {
+    } else if (game.winner === BLACK) {
       messageElem.innerHTML = 'Checkmate, black wins.';
     } else {
       messageElem.innerHTML = 'Game ended in a draw.';
     }
   } else if (game.whoseTurn === WHITE) {
-    message.innerHTML = "White's turn.";
+    messageElem.innerHTML = "White's turn.";
   } else if (game.whoseTurn === BLACK) {
-    message.innerHTML = "Black's turn.";
+    messageElem.innerHTML = "Black's turn.";
   }
 
   // Show/hide join buttons depending on if there are open seats
