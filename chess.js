@@ -40,14 +40,14 @@ exports.ChessGame = class ChessGame {
     this._whitePlayerId = null;
     this._blackPlayerId = null;
     this._board = board !== null ? board : [
-      ['BR', 'BB', 'BN', 'BQ', 'BK', 'BN', 'BB', 'BR'],
+      ['BR', 'BN', 'BB', 'BQ', 'BK', 'BB', 'BN', 'BR'],
       ['BP', 'BP', 'BP', 'BP', 'BP', 'BP', 'BP', 'BP'],
       ['  ', '  ', '  ', '  ', '  ', '  ', '  ', '  '],
       ['  ', '  ', '  ', '  ', '  ', '  ', '  ', '  '],
       ['  ', '  ', '  ', '  ', '  ', '  ', '  ', '  '],
       ['  ', '  ', '  ', '  ', '  ', '  ', '  ', '  '],
       ['WP', 'WP', 'WP', 'WP', 'WP', 'WP', 'WP', 'WP'],
-      ['WR', 'WB', 'WN', 'WQ', 'WK', 'WN', 'WB', 'WR'],
+      ['WR', 'WN', 'WB', 'WQ', 'WK', 'WB', 'WN', 'WR'],
     ];
     this._whoseTurn = whoseTurn !== null ? whoseTurn : WHITE;
     if (castlingInfo !== null) {
