@@ -324,8 +324,6 @@ exports.ChessGame = class ChessGame {
 
   // move.data is of the following format:
   // {
-  //   # optional, indicate castling kingside/queenside
-  //   castlingSide: KING | QUEEN,
   //   # required if not castling, src/dst coordinates of the piece being moved
   //   srcPos: {rank: 0-7, file: 0-7},
   //   dstPos: {rank: 0-7, file: 0-7},
@@ -345,7 +343,6 @@ exports.ChessGame = class ChessGame {
     let newCastlingInfo = this._cloneCastlingInfo(this._castlingInfo);
 
     // Pull members out of move.data for easy access
-    const castlingSide = move.data.hasOwnProperty('castling') ? move.data.castling : null;
     const srcPos = move.data.hasOwnProperty('srcPos') ? move.data.srcPos : null;
     const dstPos = move.data.hasOwnProperty('dstPos') ? move.data.dstPos : null;
     const pawnPromotion =
@@ -363,6 +360,23 @@ exports.ChessGame = class ChessGame {
     }
 
     // Handle castling
+    let castlingSide = null;
+    const srcPiece = this._board[srcPos.rank][srcPos.file];
+    if (this._whoseTurn === WHITE && srcPos.rank === 7 && srcPos.file === 4 &&
+	srcPiece === WHITE + KING) {
+      if (dstPos.rank === 7 && dstPos.file === 6) {
+	castlingSide = KING;
+      } else if (dstPos.rank === 7 && dstPos.file === 2) {
+	castlingSide = QUEEN;
+      }
+    } else if (this._whoseTurn === BLACK && srcPos.rank === 0 && srcPos.file === 4 &&
+	       srcPiece === BLACK + KING) {
+      if (dstPos.rank === 0 && dstPos.file === 6) {
+	castlingSide = KING;
+      } else if (dstPos.rank === 0 && dstPos.file === 2) {
+	castlingSide = QUEEN;
+      }
+    }
     if (castlingSide !== null) {
       const canCastle = this._canCastle(
 	this._whoseTurn,
@@ -377,8 +391,6 @@ exports.ChessGame = class ChessGame {
       this._executeCastle(this._whoseTurn, castlingSide, newBoard, newCastlingInfo);
     } else {
       // Make sure the source piece exists and is the right color
-      const srcPiece =
-	    this._board[srcPos.rank][srcPos.file];
       if (srcPiece[0] !== this._whoseTurn) {
 	return {
 	  success: false,
