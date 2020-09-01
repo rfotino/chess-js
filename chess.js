@@ -62,6 +62,8 @@ exports.ChessGame = class ChessGame {
       dstPos: null,  // Position pawn would move to capture
       capturePos: null,  // Position of the to-be-captured pawn
     };
+    this._prevSrcPos = null;
+    this._prevDstPos = null;
   }
 
   addPlayer(playerId, color) {
@@ -345,6 +347,9 @@ exports.ChessGame = class ChessGame {
     // Pull members out of move.data for easy access
     const srcPos = move.data.hasOwnProperty('srcPos') ? move.data.srcPos : null;
     const dstPos = move.data.hasOwnProperty('dstPos') ? move.data.dstPos : null;
+    if (srcPos === null || dstPos === null) {
+      return { success: false, message: 'srcPos and dstPos are both required.' };
+    }
     const pawnPromotion =
       move.data.hasOwnProperty('pawnPromotion') ? move.data.pawnPromotion : null;
 
@@ -478,6 +483,8 @@ exports.ChessGame = class ChessGame {
     this._enPassantInfo = newEnPassantInfo;
     this._castlingInfo = newCastlingInfo;
     this._whoseTurn = this._whoseTurn == WHITE ? BLACK : WHITE;
+    this._prevSrcPos = srcPos;
+    this._prevDstPos = dstPos;
     return { success: true };
   }
 
@@ -625,6 +632,8 @@ exports.ChessGame = class ChessGame {
       enPassantInfo: this._enPassantInfo,
       castlingInfo: this._castlingInfo,
       openSeats: this.getOpenSeats(),
+      prevSrcPos: this._prevSrcPos,
+      prevDstPos: this._prevDstPos,
     };
     if (playerId !== null && playerId === this._whitePlayerId) {
       obj.myColor = WHITE;

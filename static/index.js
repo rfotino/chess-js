@@ -237,21 +237,28 @@ function updateBoard(game) {
     joinButtonsContainer.style.display = 'none';
   }
 
-  // Update pieces shown on the board
+  // Update pieces shown on the board and previous move highlights
   showBlackOnBottom = (
     game.hasOwnProperty('myColor') &&
     game.myColor === BLACK
   );
-  for (var rank = 0; rank < game.board.length; rank++) {
-    for (var file = 0; file < game.board[rank].length; file++) {
-      var squareElem = document.getElementById('sq-' + rank + '-' + file);
-      if (showBlackOnBottom) {
-	var flippedRank = game.board.length - rank - 1;
-	var flippedFile = game.board[rank].length - file - 1;
+  for (var screenRank = 0; screenRank < game.board.length; screenRank++) {
+    for (var screenFile = 0; screenFile < game.board[screenRank].length; screenFile++) {
+      var squareElem = document.getElementById('sq-' + screenRank + '-' + screenFile);
+      var gameRank = showBlackOnBottom ?
+	  game.board.length - screenRank - 1 : screenRank;
+      var gameFile = showBlackOnBottom ?
+	  game.board[gameRank].length - screenFile - 1 : screenFile;
+      squareElem.innerHTML = ASCII_TO_UNICODE[game.board[gameRank][gameFile]];
+      // Check if square was site of src/dst position of previous move, so
+      // we can highlight that square and indicate the last move to both
+      // players
+      if ((game.prevSrcPos !== null &&
+	   game.prevSrcPos.rank === gameRank && game.prevSrcPos.file === gameFile) ||
+	  (game.prevDstPos !== null &&
+	   game.prevDstPos.rank === gameRank && game.prevDstPos.file === gameFile)) {
 	squareElem.innerHTML =
-	  ASCII_TO_UNICODE[game.board[flippedRank][flippedFile]];
-      } else {
-	squareElem.innerHTML = ASCII_TO_UNICODE[game.board[rank][file]];
+	  '<div class="move-highlight">' + squareElem.innerHTML + '</div>';
       }
     }
   }
