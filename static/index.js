@@ -237,7 +237,7 @@ function updateBoard(game) {
     joinButtonsContainer.style.display = 'none';
   }
 
-  // Update pieces shown on the board and previous move highlights
+  // Update pieces shown on the board, previous move highlights, and check highlights
   showBlackOnBottom = (
     game.hasOwnProperty('myColor') &&
     game.myColor === BLACK
@@ -259,6 +259,11 @@ function updateBoard(game) {
 	   game.prevDstPos.rank === gameRank && game.prevDstPos.file === gameFile)) {
 	squareElem.innerHTML =
 	  '<div class="move-highlight">' + squareElem.innerHTML + '</div>';
+      }
+      // Check if square is the site of check, if so highlight red
+      if (game.checkPiece === game.board[gameRank][gameFile]) {
+	squareElem.innerHTML =
+	  '<div class="check-highlight">' + squareElem.innerHTML + '</div>';
       }
     }
   }

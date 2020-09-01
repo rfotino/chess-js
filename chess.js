@@ -64,6 +64,7 @@ exports.ChessGame = class ChessGame {
     };
     this._prevSrcPos = null;
     this._prevDstPos = null;
+    this._checkPiece = null;
   }
 
   addPlayer(playerId, color) {
@@ -485,6 +486,11 @@ exports.ChessGame = class ChessGame {
     this._whoseTurn = this._whoseTurn == WHITE ? BLACK : WHITE;
     this._prevSrcPos = srcPos;
     this._prevDstPos = dstPos;
+    if (this._isInCheck(this._whoseTurn, this._board, this._enPassantInfo)) {
+      this._checkPiece = this._whoseTurn + KING;
+    } else {
+      this._checkPiece = null;
+    }
     return { success: true };
   }
 
@@ -634,6 +640,7 @@ exports.ChessGame = class ChessGame {
       openSeats: this.getOpenSeats(),
       prevSrcPos: this._prevSrcPos,
       prevDstPos: this._prevDstPos,
+      checkPiece: this._checkPiece,
     };
     if (playerId !== null && playerId === this._whitePlayerId) {
       obj.myColor = WHITE;

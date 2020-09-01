@@ -73,7 +73,7 @@ body {
     padding: 0
 }
 
-.move-highlight {
+.move-highlight, .check-highlight {
     width: 100%;
     height: 100%;
     margin: 0;
@@ -85,4 +85,12 @@ body {
 
 .board-square-dark .move-highlight {
     background-color: #aaaacc;
+}
+
+.board-square-light .check-highlight {
+    background-color: #ffcccc;
+}
+
+.board-square-dark .check-highlight {
+    background-color: #cc9999;
 }
