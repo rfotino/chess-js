@@ -200,34 +200,14 @@ function joinAsBlack() {
   joinGame(BLACK);
 }
 
-// Button handler for copying link to clipboard for sharing.
-// Taken from https://www.w3schools.com/howto/howto_js_copy_clipboard.asp
-function copyLink() {
-  var linkInput = document.getElementById('share-link-input');
-  linkInput.select();
-  linkInput.setSelectionRange(0, 99999);
-  document.execCommand('copy');
-}
-
 var showBlackOnBottom = false;
 function updateBoard(game) {
   // Update status message
   if (!game.readyToStart) {
     if (game.hasOwnProperty('myColor')) {
-      var copyButton = '<button onclick="copyLink()">Copy</button>';
-      var linkInput = (
-	'<input type="text" value="' +
-	window.location.href +
-	'" id="share-link-input" />'
-      );
-      var link = (
-	'<a href="' + window.location.href + '">' +
-	window.location.href + '</a>'
-      );
       messageElem.innerHTML = (
 	'Waiting for players to join. ' +
-	'Share this URL to allow another person to join/spectate: ' +
-	linkInput + ' ' + copyButton
+	'Share your URL to allow another person to join/spectate.'
       );
     } else {
       messageElem.innerHTML = 'Join the game or wait to spectate.';

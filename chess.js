@@ -336,7 +336,11 @@ exports.ChessGame = class ChessGame {
   executeMove(move) {
     // Don't allow moves before players have joined both colors
     if (!this.isReadyToStart()) {
-      return {success: false, message: 'Both players must join before starting.'};
+      const message = (
+	'Both players must join before starting. ' +
+	'Share your URL to allow another person to join/spectate.'
+      );
+      return {success: false, message};
     }
 
     // Make copies of board/en passant info since we will be modifying them, then
